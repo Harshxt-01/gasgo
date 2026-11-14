@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Flame,
@@ -16,6 +17,8 @@ import {
 import { ThemeToggle } from "../theme-toggle/ThemeToggle";
 import { IUser } from "@/lib/types";
 import { useAuth } from "../auth/AuthContext";
+import { useToast } from "../ui/ToastProvider";
+import { sound } from "@/lib/sound";
 
 interface NavbarProps {
   user: IUser | null;
@@ -30,7 +33,9 @@ export function Navbar({
   onOpenBooking,
   onSearchOrder,
 }: NavbarProps) {
+  const router = useRouter();
   const { logout } = useAuth();
+  const { toast } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -192,8 +197,15 @@ export function Navbar({
                 <div className="pt-1 border-t border-slate-100 dark:border-zinc-800">
                   <button
                     onClick={() => {
+                      sound.tick();
                       logout();
                       setMenuOpen(false);
+                      toast({
+                        type: "info",
+                        title: "Signed Out",
+                        message: "You have been logged out. Redirecting to home...",
+                      });
+                      router.push("/");
                     }}
                     className="w-full text-left p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-1.5 font-semibold"
                   >

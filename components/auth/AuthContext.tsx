@@ -25,8 +25,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage first, otherwise fetch default user
+    // Check localStorage first
     const saved = localStorage.getItem("auragas_user");
+    if (saved === "guest") {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     if (saved) {
       try {
         setUser(JSON.parse(saved));
@@ -37,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Default seed user on first ever visit
     fetch("/api/user")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -95,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("auragas_user");
+    localStorage.setItem("auragas_user", "guest");
   };
 
   const setUserDirectly = (u: IUser | null) => {
