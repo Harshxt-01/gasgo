@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Flame, ShieldCheck, ArrowRight, User, Mail, Phone, MapPin, Sparkles, AlertCircle } from "lucide-react";
+import { Flame, ShieldCheck, ArrowRight, User, Mail, Phone, MapPin, Sparkles, AlertCircle, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthContext";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ThemeToggle } from "@/components/theme-toggle/ThemeToggle";
@@ -16,6 +16,8 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("+91 ");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [consumerType, setConsumerType] = useState<"domestic" | "commercial">("domestic");
   const [city, setCity] = useState("Bengaluru");
   const [loading, setLoading] = useState(false);
@@ -25,8 +27,13 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
 
-    if (!name.trim() || !email.trim() || !phone.trim()) {
+    if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
       setError("Please fill out all required fields.");
+      return;
+    }
+
+    if (password.trim().length < 4) {
+      setError("Password must be at least 4 characters long.");
       return;
     }
 
@@ -35,6 +42,7 @@ export default function SignupPage() {
       name: name.trim(),
       email: email.trim(),
       phone: phone.trim(),
+      password: password.trim(),
       role: "consumer",
     });
     setLoading(false);
@@ -45,7 +53,7 @@ export default function SignupPage() {
         title: "Connection Registered!",
         message: "Your new LPG SV consumer voucher has been issued with instant DBTL subsidy eligibility.",
       });
-      router.push("/");
+      router.push("/dashboard");
     } else {
       setError(result.error || "Registration failed. Please try again.");
     }
@@ -181,6 +189,34 @@ export default function SignupPage() {
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-slate-900 dark:text-white"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Account Password */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300">
+                  Set Account Password / PIN *
+                </label>
+                <span className="text-[10px] text-slate-400">Used to sign in later</span>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a secure password (min. 4 chars)"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-slate-900 dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 

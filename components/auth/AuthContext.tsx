@@ -6,11 +6,12 @@ import { IUser } from "@/lib/types";
 interface AuthContextType {
   user: IUser | null;
   loading: boolean;
-  login: (identifier: string) => Promise<{ success: boolean; error?: string }>;
+  login: (identifier: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   register: (data: {
     name: string;
     email: string;
     phone: string;
+    password?: string;
     consumerNumber?: string;
     role?: "consumer" | "admin";
   }) => Promise<{ success: boolean; error?: string }>;
@@ -56,12 +57,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (identifier: string) => {
+  const login = async (identifier: string, password?: string) => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier }),
+        body: JSON.stringify({ identifier, password }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     name: string;
     email: string;
     phone: string;
+    password?: string;
     consumerNumber?: string;
     role?: "consumer" | "admin";
   }) => {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Flame, ShieldCheck, ArrowRight, Lock, User, Sparkles, AlertCircle } from "lucide-react";
+import { Flame, ShieldCheck, ArrowRight, Lock, User, Sparkles, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthContext";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ThemeToggle } from "@/components/theme-toggle/ThemeToggle";
@@ -14,7 +14,8 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("••••••••");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,9 +26,13 @@ export default function LoginPage() {
       setError("Please enter your registered email or SV Number.");
       return;
     }
+    if (!password.trim()) {
+      setError("Please enter your account password.");
+      return;
+    }
 
     setLoading(true);
-    const result = await login(identifier.trim());
+    const result = await login(identifier.trim(), password.trim());
     setLoading(false);
 
     if (result.success) {
@@ -39,7 +44,7 @@ export default function LoginPage() {
       if (identifier.toLowerCase().includes("admin")) {
         router.push("/admin");
       } else {
-        router.push("/");
+        router.push("/dashboard");
       }
     } else {
       setError(result.error || "Authentication failed. Check your credentials.");
@@ -48,9 +53,11 @@ export default function LoginPage() {
 
   const handleQuickDemo = async (type: "consumer" | "admin") => {
     const id = type === "consumer" ? "arjun.verma@auragas.io" : "admin@auragas.io";
+    const pwd = type === "consumer" ? "demo" : "admin";
     setIdentifier(id);
+    setPassword(pwd);
     setLoading(true);
-    const result = await login(id);
+    const result = await login(id, pwd);
     setLoading(false);
 
     if (result.success) {
@@ -59,7 +66,7 @@ export default function LoginPage() {
         title: `Logged in as ${type === "consumer" ? "Consumer" : "Fleet Admin"}`,
         message: `Welcome, ${type === "consumer" ? "Arjun Verma" : "Dr. Vikram Sethi"}!`,
       });
-      router.push(type === "consumer" ? "/" : "/admin");
+      router.push(type === "consumer" ? "/dashboard" : "/admin");
     }
   };
 
@@ -167,12 +174,20 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-slate-900 dark:text-white"
+                  placeholder="Enter your password"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-slate-900 dark:text-white"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 

@@ -409,8 +409,13 @@ export async function updateBooking(idOrRef: string, updates: Partial<IBooking>)
   return memoryBookings[idx];
 }
 
-export async function loginUser(identifier: string): Promise<IUser | null> {
+export async function loginUser(identifier: string, password?: string): Promise<IUser | null> {
   const clean = identifier.trim().toLowerCase();
+  const isDemo =
+    clean === "arjun.verma@auragas.io" ||
+    clean === "admin@auragas.io" ||
+    clean === "sv-8492018" ||
+    clean === "admin-peso-01";
   
   const db = await connectDB();
   if (db && db.connection.readyState === 1) {
@@ -422,6 +427,10 @@ export async function loginUser(identifier: string): Promise<IUser | null> {
         ],
       }).lean();
       if (u) {
+        // If user has a password set, verify it (demo accounts bypass)
+        if (!isDemo && u.password && password && u.password !== password) {
+          throw new Error("Incorrect password. Please verify your credentials.");
+        }
         return {
           _id: u._id.toString(),
           name: u.name,
@@ -433,7 +442,10 @@ export async function loginUser(identifier: string): Promise<IUser | null> {
           createdAt: u.createdAt?.toISOString(),
         };
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.message && err.message.includes("Incorrect password")) {
+        throw err;
+      }
       console.warn("DB login error, fallback to memory:", err);
     }
   }
@@ -445,6 +457,9 @@ export async function loginUser(identifier: string): Promise<IUser | null> {
       u.consumerNumber.toUpperCase() === identifier.trim().toUpperCase()
   );
   if (found) {
+    if (!isDemo && found.password && password && found.password !== password) {
+      throw new Error("Incorrect password. Please verify your credentials.");
+    }
     memoryUser = found;
     return found;
   }
@@ -455,6 +470,7 @@ export async function registerUser(userData: {
   name: string;
   email: string;
   phone: string;
+  password?: string;
   consumerNumber?: string;
   role?: "consumer" | "admin";
 }): Promise<IUser> {
@@ -467,6 +483,7 @@ export async function registerUser(userData: {
     name: userData.name,
     email: userData.email,
     phone: userData.phone,
+    password: userData.password || "123456",
     consumerNumber,
     role: userData.role || "consumer",
     avatarUrl: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`,
@@ -480,6 +497,7 @@ export async function registerUser(userData: {
         name: newUser.name,
         email: newUser.email,
         phone: newUser.phone,
+        password: newUser.password,
         consumerNumber: newUser.consumerNumber,
         role: newUser.role,
         avatarUrl: newUser.avatarUrl,
@@ -488,6 +506,19 @@ export async function registerUser(userData: {
     } catch (err) {
       console.warn("DB register error, fallback to memory:", err);
     }
+  }
+
+  const existingIdx = memoryUsers.findIndex(
+    (u) => u.email.toLowerCase() === userData.email.toLowerCase()
+  );
+  if (existingIdx !== -1) {
+    memoryUsers[existingIdx] = {
+      ...memoryUsers[existingIdx],
+      ...newUser,
+      _id: memoryUsers[existingIdx]._id,
+    };
+    memoryUser = memoryUsers[existingIdx];
+    return memoryUser;
   }
 
   memoryUsers.push(newUser);

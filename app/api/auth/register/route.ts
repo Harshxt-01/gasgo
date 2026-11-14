@@ -16,6 +16,7 @@ export async function POST(req: Request) {
       name: body.name,
       email: body.email,
       phone: body.phone,
+      password: body.password || "123456",
       consumerNumber: body.consumerNumber,
       role: body.role || "consumer",
     });

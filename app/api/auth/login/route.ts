@@ -5,6 +5,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const identifier = body.identifier || body.email || body.consumerNumber;
+    const password = body.password;
 
     if (!identifier) {
       return NextResponse.json(
@@ -13,10 +14,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await loginUser(identifier);
+    const user = await loginUser(identifier, password);
     if (!user) {
       return NextResponse.json(
-        { error: "Invalid credentials. Try demo accounts: arjun.verma@auragas.io or admin@auragas.io" },
+        { error: "No account found with this email or SV number. Please register for a connection first." },
         { status: 401 }
       );
     }
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || "Failed to log in" },
-      { status: 500 }
+      { status: 401 }
     );
   }
 }
