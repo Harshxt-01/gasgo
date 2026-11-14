@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AuraGas — Modern Smart LPG Gas Cylinder Booking & Telemetry Platform
 
 AuraGas is an ultra-modern, full-stack LPG gas cylinder booking platform built with **Next.js App Router (React 19, TypeScript)**, **Tailwind CSS**, **Lucide Icons**, **Framer Motion**, and **Mongoose / MongoDB**.
@@ -138,3 +139,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 npm run build
 npm run start
 ```
+=======
+# gasgo
+A full-stack booking and reservation system designed to manage appointments, check real-time availability, and process bookings seamlessly.
+>>>>>>> 0cbf1ed72d2882748f03773693a7be46c32e2cfa
